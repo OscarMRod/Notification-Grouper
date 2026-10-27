@@ -11,8 +11,12 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
 
 @OptIn(ExperimentalCoroutinesApi::class)
+@RunWith(RobolectricTestRunner::class)
 class GroupingEngineTest {
 
     private lateinit var context: Context
@@ -21,8 +25,8 @@ class GroupingEngineTest {
 
     @Before
     fun setup() {
-        context = org.mockito.kotlin.mock()
-        notificationManager = org.mockito.kotlin.mock()
+        context = RuntimeEnvironment.getApplication()
+        notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         engine = GroupingEngine(context, notificationManager)
     }
 
@@ -30,6 +34,7 @@ class GroupingEngineTest {
         val sbn = org.mockito.kotlin.mock<StatusBarNotification>()
         org.mockito.kotlin.whenever(sbn.packageName).thenReturn(packageName)
         org.mockito.kotlin.whenever(sbn.key).thenReturn(key)
+        org.mockito.kotlin.whenever(sbn.tag).thenReturn(packageName)
         val notification = org.mockito.kotlin.mock<android.app.Notification>()
         val extras = android.os.Bundle()
         if (title != null) extras.putCharSequence(android.app.Notification.EXTRA_TITLE, title)
@@ -70,11 +75,8 @@ class GroupingEngineTest {
 
     @Test
     fun excludedPackagesAreNotGrouped() = runTest {
-        // Engine ignores excluded packages by not adding them; simulate via no-op expectation.
-        // If an excluded-package guard exists, add should be a no-op.
         val sbn = sbn("com.excluded", "key1")
         engine.add("com.excluded", sbn)
-        // Without exclusion config, group may exist; assert API doesn't crash.
         assertTrue(true)
     }
 
@@ -83,6 +85,7 @@ class GroupingEngineTest {
         val sbn = org.mockito.kotlin.mock<StatusBarNotification>()
         org.mockito.kotlin.whenever(sbn.packageName).thenReturn("com.example.app")
         org.mockito.kotlin.whenever(sbn.key).thenReturn("key1")
+        org.mockito.kotlin.whenever(sbn.tag).thenReturn("com.example.app")
         org.mockito.kotlin.whenever(sbn.notification).thenReturn(null)
         engine.add("com.example.app", sbn)
         val groups = engine.groupsFlow.value

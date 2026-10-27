@@ -9,7 +9,7 @@ import androidx.core.app.NotificationCompat
 import com.devpupu.notifgrouper.domain.model.NotificationGroup
 import com.devpupu.notifgrouper.R
 import com.devpupu.notifgrouper.DevLog
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.sync.Mutex
@@ -23,7 +23,7 @@ class GroupingEngine(
     private val groups = ConcurrentHashMap<String, MutableList<StatusBarNotification>>()
     private val mutex = Mutex()
     private val _groupsFlow = MutableStateFlow<Map<String, NotificationGroup>>(emptyMap())
-    val groupsFlow: Flow<Map<String, NotificationGroup>> = _groupsFlow.asStateFlow()
+    val groupsFlow: StateFlow<Map<String, NotificationGroup>> = _groupsFlow.asStateFlow()
 
     // summary notification id per package (stable)
     private fun summaryId(packageName: String): Int = (packageName.hashCode().toLong() and 0x7FFFFFFFL).toInt() + 1000
@@ -67,8 +67,8 @@ class GroupingEngine(
     }
 
     suspend fun clearBySummary(sbn: StatusBarNotification) {
-        val pkg = sbn.notification?.extras?.getCharSequence(Notification.EXTRA_TITLE)?.toString()
-        if (pkg != null) clear(pkg)
+        val pkg = sbn.tag
+        if (pkg != null && groups.containsKey(pkg)) clear(pkg)
     }
 
     suspend fun clearAll() = mutex.withLock {
@@ -93,7 +93,7 @@ class GroupingEngine(
             val channel = android.app.NotificationChannel("devpupu_group_v2", "devpupu Grouped", android.app.NotificationManager.IMPORTANCE_HIGH)
             notificationManager.createNotificationChannel(channel)
         }
-        val appIcon = try { context.packageManager.getApplicationIcon(packageName) } catch (e: Exception) { null }
+        val appIcon = try { context.packageManager?.getApplicationIcon(packageName) } catch (e: Exception) { null }
         val appIconBitmap = appIcon?.let { drawable ->
             val bmp = android.graphics.Bitmap.createBitmap(
                 drawable.intrinsicWidth.coerceAtLeast(1),
@@ -105,7 +105,10 @@ class GroupingEngine(
             drawable.draw(canvas)
             bmp
         }
-        val appLabel = try { context.packageManager.getApplicationLabel(context.packageManager.getApplicationInfo(packageName, 0)).toString() } catch (e: Exception) { packageName }
+        val appLabel = try {
+            val ai = context.packageManager?.getApplicationInfo(packageName, 0)
+            if (ai != null) context.packageManager?.getApplicationLabel(ai)?.toString() else null
+        } catch (e: Exception) { null } ?: packageName
         val inboxStyle = NotificationCompat.InboxStyle()
             .setSummaryText(appLabel)
         list.forEach { sbn ->
@@ -113,7 +116,7 @@ class GroupingEngine(
                 ?: sbn.packageName
             inboxStyle.addLine(title ?: "")
         }
-        val launchIntent = context.packageManager.getLaunchIntentForPackage(packageName)
+        val launchIntent = try { context.packageManager.getLaunchIntentForPackage(packageName) } catch (e: Exception) { null }
         val contentIntent = launchIntent?.let { PendingIntent.getActivity(context, summaryId(packageName), it, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE) }
         val builder = NotificationCompat.Builder(context, "devpupu_group_v2")
             .setSmallIcon(R.drawable.ic_notification)
@@ -128,10 +131,10 @@ class GroupingEngine(
             .setDefaults(NotificationCompat.DEFAULT_ALL)
             .setAutoCancel(true)
         if (contentIntent != null) builder.setContentIntent(contentIntent)
-        notificationManager.notify(summaryId(packageName), builder.build())
+        notificationManager.notify(packageName, summaryId(packageName), builder.build())
     }
 
     private fun cancelSummary(packageName: String) {
-        notificationManager.cancel(summaryId(packageName))
+        notificationManager.cancel(packageName, summaryId(packageName))
     }
 }
