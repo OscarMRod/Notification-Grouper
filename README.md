@@ -32,6 +32,10 @@ APK output: `app/build/outputs/apk/debug/app-debug.apk`
 - Notification access permission (Settings > Apps > Special access > Notification access)
 - Disable battery optimization for the app on aggressive OEMs
 
+## Note
+
+For best results, disable any third-party notification managers (such as Dynamic Spot or pop-up control apps) that intercept or re-display notifications. They can conflict with grouping and cause duplicate or missing notifications.
+
 ## License
 
 MIT
