@@ -66,6 +66,16 @@ class GroupingEngine(
         ))
     }
 
+    private fun isSilentHours(): Boolean {
+        val prefs = context.getSharedPreferences("devpupu_prefs", Context.MODE_PRIVATE)
+        val start = prefs.getInt("silent_start", -1)
+        val end = prefs.getInt("silent_end", -1)
+        if (start < 0 || end < 0) return false
+        val now = java.util.Calendar.getInstance()
+        val mins = now.get(java.util.Calendar.HOUR_OF_DAY) * 60 + now.get(java.util.Calendar.MINUTE)
+        return if (start <= end) mins in start..end else (mins >= start || mins <= end)
+    }
+
     fun isExcluded(pkg: String): Boolean = SensitivePackages.isExcluded(pkg)
 
     suspend fun remove(packageName: String, key: String) = mutex.withLock {
