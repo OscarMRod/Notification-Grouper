@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Notification Grouper</string>
+    <string name="menu">Menú</string>
+    <string name="settings">Ajustes</string>
+    <string name="history">Historial</string>
+    <string name="rules">Reglas</string>
+    <string name="add">Agregar</string>
+    <string name="delete">Eliminar</string>
+    <string name="name">Nombre</string>
+    <string name="keyword">Palabra clave</string>
+    <string name="group_key">Clave de grupo</string>
+    <string name="category_rules">Reglas de categoría</string>
+</resources>
