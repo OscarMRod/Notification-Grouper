@@ -22,6 +22,7 @@ class GroupingEngine(
     private val historyDao: com.devpupu.notifgrouper.data.db.NotificationHistoryDao? = null,
     private val ruleDao: com.devpupu.notifgrouper.data.db.GroupRuleDao? = null,
 ) {
+    private val seen = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
     private val groups = ConcurrentHashMap<String, MutableList<StatusBarNotification>>()
     private val mutex = Mutex()
     private val _groupsFlow = MutableStateFlow<Map<String, NotificationGroup>>(emptyMap())
@@ -33,6 +34,11 @@ class GroupingEngine(
     suspend fun add(packageName: String, sbn: StatusBarNotification) = mutex.withLock {
         if (SensitivePackages.isExcluded(packageName)) {
             DevLog.log(context, "Engine", "add excluded pkg=$packageName")
+            return@withLock
+        }
+        val dedupKey = sbn.key + "|" + (sbn.notification?.extras?.getCharSequence(android.app.Notification.EXTRA_TITLE)?.toString() ?: "") + "|" + (sbn.notification?.extras?.getCharSequence(android.app.Notification.EXTRA_TEXT)?.toString() ?: "")
+        if (!seen.add(dedupKey)) {
+            DevLog.log(context, "Engine", "add dedup skip pkg=$packageName")
             return@withLock
         }
         val visibility = sbn.notification?.visibility ?: android.app.Notification.VISIBILITY_PUBLIC
