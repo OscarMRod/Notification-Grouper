@@ -52,7 +52,8 @@ fun OnboardingScreen(onOpenSettings: () -> Unit) {
         Spacer(Modifier.height(16.dp))
         Text(
             "DevPupu groups your notifications by app. To do this it needs Notification Access permission. " +
-                "Your notification content is never stored or sent anywhere.",
+                "Your notification content is never stored or sent anywhere. " +
+                "If access is unavailable, you can still manage groups manually in Settings.",
             textAlign = TextAlign.Center
         )
         Spacer(Modifier.height(24.dp))
