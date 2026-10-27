@@ -43,7 +43,7 @@ class AppPreferencesRepository @Inject constructor(
 
     suspend fun registerIfMissing(packageName: String, appName: String? = null) {
         if (dao.getByPackage(packageName) == null) {
-            dao.upsert(GroupedAppEntity(packageName = packageName, appName = appName, enabled = false))
+            dao.upsert(GroupedAppEntity(packageName = packageName, appName = appName, enabled = true))
         }
     }
 

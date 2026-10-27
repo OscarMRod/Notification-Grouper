@@ -54,37 +54,6 @@ class NotifGrouperListenerService : NotificationListenerService() {
             if (!enabled) return@launch
             groupingEngine.add(sbn.packageName, sbn)
             DevLog.log(applicationContext, "Listener", "add done pkg=${sbn.packageName}")
-            try {
-                // Repost original as a silent, low-priority notification so it stays
-                // accessible/clickable in the shade without alerting.
-                val nm = applicationContext.getSystemService(android.content.Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                    val ch = android.app.NotificationChannel("devpupu_silent", "devpupu Silent", android.app.NotificationManager.IMPORTANCE_LOW)
-                    ch.setSound(null, null)
-                    ch.enableVibration(false)
-                    nm.createNotificationChannel(ch)
-                }
-                val orig = sbn.notification
-                if (orig != null) {
-                    val silent = androidx.core.app.NotificationCompat.Builder(applicationContext, "devpupu_silent")
-                        .setSmallIcon(orig.smallIcon?.resId?.takeIf { it != 0 } ?: android.R.drawable.ic_dialog_info)
-                        .setContentTitle(orig.extras?.getCharSequence(android.app.Notification.EXTRA_TITLE))
-                        .setContentText(orig.extras?.getCharSequence(android.app.Notification.EXTRA_TEXT))
-                        .setContentIntent(orig.contentIntent)
-                        .setAutoCancel(true)
-                        .setSilent(true)
-                        .setPriority(androidx.core.app.NotificationCompat.PRIORITY_LOW)
-                        .build()
-                    nm.notify(sbn.id, silent)
-                }
-                recentlyCancelled.add(sbn.key)
-                // Cancel the loud original
-                cancelNotification(sbn.key)
-                DevLog.log(applicationContext, "Listener", "reposted silent + cancelled original pkg=${sbn.packageName}")
-            } catch (e: Exception) {
-                DevLog.log(applicationContext, "Listener", "silent repost failed: ${e.message}")
-                try { cancelNotification(sbn.key) } catch (_: Exception) {}
-            }
         }
     }
 
@@ -102,6 +71,17 @@ class NotifGrouperListenerService : NotificationListenerService() {
         if (recentlyCancelled.remove(sbn.key)) return
         scope.launch {
             groupingEngine.remove(sbn.packageName, sbn.key)
+        }
+    }
+
+    override fun onListenerConnected() {
+        super.onListenerConnected()
+        try {
+            activeNotifications?.forEach { sbn ->
+                if (sbn.packageName != packageName) onNotificationPosted(sbn)
+            }
+        } catch (e: Exception) {
+            DevLog.log(applicationContext, "Listener", "onListenerConnected error: ${e.message}")
         }
     }
 

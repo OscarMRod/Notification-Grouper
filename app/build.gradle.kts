@@ -13,8 +13,8 @@ android {
         applicationId = "com.devpupu.notifgrouper"
         minSdk = 26
         targetSdk = 34
-        versionCode = 34
-        versionName = "0.34"
+        versionCode = 35
+        versionName = "0.35"
         setProperty("archivesBaseName", "Notification-Grouper")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
