@@ -10,6 +10,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.cancel
 import com.devpupu.notifgrouper.DevLog
+import com.devpupu.notifgrouper.data.repository.AppPreferencesRepository
 import com.devpupu.notifgrouper.data.repository.GroupingEngine
 import com.devpupu.notifgrouper.data.repository.SensitivePackages
 
@@ -19,6 +20,9 @@ import java.util.concurrent.ConcurrentHashMap
 class NotifGrouperListenerService : NotificationListenerService() {
     @Inject
     lateinit var groupingEngine: GroupingEngine
+
+    @Inject
+    lateinit var appPrefs: AppPreferencesRepository
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val recentlyCancelled = ConcurrentHashMap.newKeySet<String>()
@@ -36,7 +40,12 @@ class NotifGrouperListenerService : NotificationListenerService() {
             }
         DevLog.log(applicationContext, "Listener", "posted pkg=${sbn.packageName} skip=$skip key=${sbn.key}")
         if (skip) return
+        // Register app in prefs (disabled by default) if new, then group only if enabled
         scope.launch {
+            val appName = try { applicationContext.packageManager.getApplicationLabel(applicationContext.packageManager.getApplicationInfo(sbn.packageName, 0)).toString() } catch (e: Exception) { null }
+            appPrefs.registerIfMissing(sbn.packageName, appName)
+            val enabled = try { appPrefs.isGrouped(sbn.packageName) } catch (e: Exception) { false }
+            if (!enabled) return@launch
             groupingEngine.add(sbn.packageName, sbn)
             DevLog.log(applicationContext, "Listener", "add done pkg=${sbn.packageName}")
             try {

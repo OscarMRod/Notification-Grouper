@@ -41,7 +41,11 @@ class AppPreferencesRepository @Inject constructor(
         }
     }
 
-    suspend fun toggleGrouped(packageName: String, enabled: Boolean) = toggle(packageName, enabled)
+    suspend fun registerIfMissing(packageName: String, appName: String? = null) {
+        if (dao.getByPackage(packageName) == null) {
+            dao.upsert(GroupedAppEntity(packageName = packageName, appName = appName, enabled = false))
+        }
+    }
 
     suspend fun remove(packageName: String) {
         dao.delete(packageName)
