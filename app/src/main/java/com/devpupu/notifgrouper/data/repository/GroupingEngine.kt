@@ -20,6 +20,7 @@ class GroupingEngine(
     private val context: Context,
     private val notificationManager: NotificationManager,
     private val historyDao: com.devpupu.notifgrouper.data.db.NotificationHistoryDao? = null,
+    private val ruleDao: com.devpupu.notifgrouper.data.db.GroupRuleDao? = null,
 ) {
     private val groups = ConcurrentHashMap<String, MutableList<StatusBarNotification>>()
     private val mutex = Mutex()
@@ -39,12 +40,17 @@ class GroupingEngine(
             DevLog.log(context, "Engine", "add sensitive visibility pkg=$packageName")
             return@withLock
         }
-        val list = groups.getOrPut(packageName) { mutableListOf() }
+        val title = sbn.notification?.extras?.getCharSequence(android.app.Notification.EXTRA_TITLE)?.toString() ?: ""
+        val text = sbn.notification?.extras?.getCharSequence(android.app.Notification.EXTRA_TEXT)?.toString() ?: ""
+        val rules = try { ruleDao?.getAllSync() } catch (e: Exception) { emptyList() } ?: emptyList()
+        val matched = rules.firstOrNull { rule -> (title + " " + text).contains(rule.keyword, ignoreCase = true) }
+        val groupKey = matched?.groupKey ?: packageName
+        val list = groups.getOrPut(groupKey) { mutableListOf() }
         if (list.none { it.key == sbn.key }) list.add(sbn)
         publishLocked()
-        DevLog.log(context, "Engine", "add posting summary pkg=$packageName count=${list.size}")
-        postSummaryLocked(packageName, list)
-        DevLog.log(context, "Engine", "add summary posted pkg=$packageName")
+        DevLog.log(context, "Engine", "add posting summary pkg=$groupKey count=${list.size}")
+        postSummaryLocked(groupKey, list)
+        DevLog.log(context, "Engine", "add summary posted pkg=$groupKey")
         historyDao?.insert(com.devpupu.notifgrouper.data.db.NotificationHistoryEntity(
             packageName = packageName,
             appName = try { context.packageManager.getApplicationLabel(context.packageManager.getApplicationInfo(packageName, 0)).toString() } catch (e: Exception) { null },
