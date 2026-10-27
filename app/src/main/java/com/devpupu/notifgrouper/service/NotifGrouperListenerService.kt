@@ -26,6 +26,8 @@ class NotifGrouperListenerService : NotificationListenerService() {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val recentlyCancelled = ConcurrentHashMap.newKeySet<String>()
+    private val recentlyPosted = ConcurrentHashMap.newKeySet<String>()
+    private val postedTimes = ConcurrentHashMap<String, Long>()
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         if (sbn == null) {
@@ -33,6 +35,10 @@ class NotifGrouperListenerService : NotificationListenerService() {
             return
         }
         if (sbn.packageName == packageName) return
+        val now = System.currentTimeMillis()
+        val last = postedTimes[sbn.key]
+        if (last != null && now - last < 2000) return
+        postedTimes[sbn.key] = now
         val skip = SensitivePackages.isExcluded(sbn.packageName) ||
             run {
                 val v = sbn.notification?.visibility ?: android.app.Notification.VISIBILITY_PUBLIC
