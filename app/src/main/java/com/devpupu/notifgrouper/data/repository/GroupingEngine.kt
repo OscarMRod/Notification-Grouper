@@ -36,7 +36,7 @@ class GroupingEngine(
             DevLog.log(context, "Engine", "add excluded pkg=$packageName")
             return@withLock
         }
-        val dedupKey = sbn.key + "|" + (sbn.notification?.extras?.getCharSequence(android.app.Notification.EXTRA_TITLE)?.toString() ?: "") + "|" + (sbn.notification?.extras?.getCharSequence(android.app.Notification.EXTRA_TEXT)?.toString() ?: "")
+        val dedupKey = sbn.key + "|" + sbn.postTime
         if (!seen.add(dedupKey)) {
             DevLog.log(context, "Engine", "add dedup skip pkg=$packageName")
             return@withLock
