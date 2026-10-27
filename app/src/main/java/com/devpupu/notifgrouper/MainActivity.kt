@@ -11,7 +11,17 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.material3.MaterialTheme
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -29,11 +39,13 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.devpupu.notifgrouper.ui.OnboardingScreen
 import com.devpupu.notifgrouper.ui.HistoryScreen
+import com.devpupu.notifgrouper.ui.RulesScreen
 import com.devpupu.notifgrouper.ui.SettingsScreen
 import com.devpupu.notifgrouper.ui.isNotificationAccessGranted
 import com.devpupu.notifgrouper.ui.theme.DevPupuTheme
 import dagger.hilt.android.AndroidEntryPoint
 
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -60,13 +72,29 @@ class MainActivity : ComponentActivity() {
                     }
 
                     if (granted) {
-                        var showHistory by remember { mutableStateOf(false) }
-                        Box(Modifier.fillMaxSize()) {
-                            if (showHistory) HistoryScreen() else SettingsScreen()
-                            FloatingActionButton(
-                                onClick = { showHistory = !showHistory },
-                                modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)
-                            ) { Text(if (showHistory) "S" else "H") }
+                        var current by remember { mutableStateOf("settings") }
+                        val drawerState = rememberDrawerState(DrawerValue.Closed)
+                        val scope = rememberCoroutineScope()
+                        ModalNavigationDrawer(
+                            drawerState = drawerState,
+                            drawerContent = {
+                                ModalDrawerSheet {
+                                    Text("Menú", modifier = Modifier.padding(16.dp))
+                                    NavigationDrawerItem(label = { Text("Settings") }, selected = current == "settings", onClick = { current = "settings"; scope.launch { drawerState.close() } })
+                                    NavigationDrawerItem(label = { Text("History") }, selected = current == "history", onClick = { current = "history"; scope.launch { drawerState.close() } })
+                                    NavigationDrawerItem(label = { Text("Rules") }, selected = current == "rules", onClick = { current = "rules"; scope.launch { drawerState.close() } })
+                                }
+                            }
+                        ) {
+                            Scaffold(topBar = { TopAppBar(title = { Text("Notification Grouper") }, navigationIcon = { IconButton(onClick = { scope.launch { drawerState.open() } }) { Text("☰") } }) }) { padding ->
+                                Box(Modifier.fillMaxSize().padding(padding)) {
+                                    when (current) {
+                                        "history" -> HistoryScreen()
+                                        "rules" -> RulesScreen()
+                                        else -> SettingsScreen()
+                                    }
+                                }
+                            }
                         }
                     } else {
                         OnboardingScreen(onOpenSettings = {})
