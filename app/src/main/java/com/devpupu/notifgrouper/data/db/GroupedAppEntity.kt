@@ -7,5 +7,5 @@ import androidx.room.PrimaryKey
 data class GroupedAppEntity(
     @PrimaryKey val packageName: String,
     val appName: String? = null,
-    val enabled: Boolean = true
+    val enabled: Boolean = false
 )

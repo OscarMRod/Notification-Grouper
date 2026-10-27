@@ -51,6 +51,28 @@ class AppPreferencesRepository @Inject constructor(
         dao.delete(packageName)
     }
 
+    suspend fun scanInstalledApps(context: android.content.Context) {
+        val pm = context.packageManager
+        val installed = pm.getInstalledApplications(android.content.pm.PackageManager.GET_META_DATA)
+        val installedPkgs = mutableSetOf<String>()
+        for (app in installed) {
+            if (pm.getLaunchIntentForPackage(app.packageName) == null) continue
+            if (com.devpupu.notifgrouper.data.repository.SensitivePackages.isExcluded(app.packageName)) continue
+            installedPkgs.add(app.packageName)
+            val label = try { pm.getApplicationLabel(app).toString() } catch (e: Exception) { app.packageName }
+            val existing = dao.getByPackage(app.packageName)
+            if (existing == null) {
+                dao.upsert(GroupedAppEntity(packageName = app.packageName, appName = label, enabled = false))
+            } else if (existing.appName != label) {
+                dao.upsert(existing.copy(appName = label))
+            }
+        }
+        // Remove orphaned rows for uninstalled apps
+        for (entity in dao.getAllSync()) {
+            if (entity.packageName !in installedPkgs) dao.delete(entity.packageName)
+        }
+    }
+
     private fun GroupedAppEntity.toDomain() = GroupedApp(
         packageName = packageName,
         appName = appName,

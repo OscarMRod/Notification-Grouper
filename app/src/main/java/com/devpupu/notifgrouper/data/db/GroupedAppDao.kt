@@ -12,6 +12,9 @@ interface GroupedAppDao {
     @Query("SELECT * FROM grouped_apps ORDER BY appName ASC, packageName ASC")
     fun getAll(): Flow<List<GroupedAppEntity>>
 
+    @Query("SELECT * FROM grouped_apps")
+    suspend fun getAllSync(): List<GroupedAppEntity>
+
     @Query("SELECT * FROM grouped_apps WHERE packageName = :packageName LIMIT 1")
     suspend fun getByPackage(packageName: String): GroupedAppEntity?
 
