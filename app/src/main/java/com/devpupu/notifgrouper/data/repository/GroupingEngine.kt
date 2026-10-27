@@ -19,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap
 class GroupingEngine(
     private val context: Context,
     private val notificationManager: NotificationManager,
+    private val historyDao: com.devpupu.notifgrouper.data.db.NotificationHistoryDao? = null,
 ) {
     private val groups = ConcurrentHashMap<String, MutableList<StatusBarNotification>>()
     private val mutex = Mutex()
@@ -44,6 +45,13 @@ class GroupingEngine(
         DevLog.log(context, "Engine", "add posting summary pkg=$packageName count=${list.size}")
         postSummaryLocked(packageName, list)
         DevLog.log(context, "Engine", "add summary posted pkg=$packageName")
+        historyDao?.insert(com.devpupu.notifgrouper.data.db.NotificationHistoryEntity(
+            packageName = packageName,
+            appName = try { context.packageManager.getApplicationLabel(context.packageManager.getApplicationInfo(packageName, 0)).toString() } catch (e: Exception) { null },
+            title = sbn.notification?.extras?.getCharSequence(android.app.Notification.EXTRA_TITLE)?.toString(),
+            text = sbn.notification?.extras?.getCharSequence(android.app.Notification.EXTRA_TEXT)?.toString(),
+            timestamp = System.currentTimeMillis()
+        ))
     }
 
     fun isExcluded(pkg: String): Boolean = SensitivePackages.isExcluded(pkg)

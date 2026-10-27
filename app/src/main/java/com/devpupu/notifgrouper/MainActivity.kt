@@ -9,7 +9,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Box
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
@@ -17,11 +18,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Alignment
+import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.devpupu.notifgrouper.ui.OnboardingScreen
+import com.devpupu.notifgrouper.ui.HistoryScreen
 import com.devpupu.notifgrouper.ui.SettingsScreen
 import com.devpupu.notifgrouper.ui.isNotificationAccessGranted
 import com.devpupu.notifgrouper.ui.theme.DevPupuTheme
@@ -53,7 +60,14 @@ class MainActivity : ComponentActivity() {
                     }
 
                     if (granted) {
-                        SettingsScreen()
+                        var showHistory by remember { mutableStateOf(false) }
+                        Box(Modifier.fillMaxSize()) {
+                            if (showHistory) HistoryScreen() else SettingsScreen()
+                            FloatingActionButton(
+                                onClick = { showHistory = !showHistory },
+                                modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)
+                            ) { Text(if (showHistory) "S" else "H") }
+                        }
                     } else {
                         OnboardingScreen(onOpenSettings = {})
                     }

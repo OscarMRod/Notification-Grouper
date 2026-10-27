@@ -27,11 +27,15 @@ object DatabaseModule {
     fun provideGroupedAppDao(db: AppDatabase) = db.groupedAppDao()
 
     @Provides
+    fun provideNotificationHistoryDao(db: AppDatabase) = db.notificationHistoryDao()
+
+    @Provides
     @Singleton
     fun provideGroupingEngine(
         @ApplicationContext context: Context,
         notificationManager: NotificationManager,
-    ): GroupingEngine = GroupingEngine(context, notificationManager)
+        historyDao: com.devpupu.notifgrouper.data.db.NotificationHistoryDao,
+    ): GroupingEngine = GroupingEngine(context, notificationManager, historyDao)
 
     @Provides
     @Singleton
