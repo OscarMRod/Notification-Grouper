@@ -15,7 +15,7 @@ An Android app that groups notifications from the same app into a single summary
 
 | Device | OS | Result |
 |---|---|---|
-| Samsung (One UI 8.5) | Android 16 | Notifications grouped but not displayed (OEM suppression) |
+| Samsung (One UI 8.5) | Android 16 | Grouping works after fixes (silent repost + recently-cancelled guard) |
 | Google Pixel 6 Pro | Android 17 | Grouping works correctly; summary shows as alerting notification |
 
 ## Build
