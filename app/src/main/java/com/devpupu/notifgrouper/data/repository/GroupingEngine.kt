@@ -7,6 +7,7 @@ import android.content.Context
 import android.service.notification.StatusBarNotification
 import androidx.core.app.NotificationCompat
 import com.devpupu.notifgrouper.domain.model.NotificationGroup
+import com.devpupu.notifgrouper.R
 import com.devpupu.notifgrouper.DevLog
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -115,7 +116,7 @@ class GroupingEngine(
         val launchIntent = context.packageManager.getLaunchIntentForPackage(packageName)
         val contentIntent = launchIntent?.let { PendingIntent.getActivity(context, summaryId(packageName), it, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE) }
         val builder = NotificationCompat.Builder(context, "devpupu_group_v2")
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(appLabel)
             .setContentText("${list.size} notifications")
             .setNumber(list.size)
