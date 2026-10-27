@@ -13,8 +13,9 @@ android {
         applicationId = "com.devpupu.notifgrouper"
         minSdk = 26
         targetSdk = 34
-        versionCode = 19
-        versionName = "0.19"
+        versionCode = 20
+        versionName = "0.20"
+        setProperty("archivesBaseName", "Notification-Grouper")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

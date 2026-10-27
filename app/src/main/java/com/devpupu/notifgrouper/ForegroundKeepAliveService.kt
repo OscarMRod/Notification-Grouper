@@ -17,12 +17,12 @@ class ForegroundKeepAliveService : Service() {
         super.onCreate()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            val channel = NotificationChannel("devpupu_keepalive", "devpupu Keep-Alive", NotificationManager.IMPORTANCE_LOW)
+            val channel = NotificationChannel("devpupu_keepalive", "Notification Grouper Keep-Alive", NotificationManager.IMPORTANCE_LOW)
             nm.createNotificationChannel(channel)
         }
         val notif: Notification = NotificationCompat.Builder(this, "devpupu_keepalive")
             .setSmallIcon(android.R.drawable.ic_dialog_info)
-            .setContentTitle("devpupu")
+            .setContentTitle("Notification Grouper")
             .setContentText("Servicio activo para agrupar notificaciones")
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)
