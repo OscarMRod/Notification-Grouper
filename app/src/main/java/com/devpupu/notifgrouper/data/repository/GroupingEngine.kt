@@ -116,15 +116,18 @@ class GroupingEngine(
                 ?: sbn.packageName
             inboxStyle.addLine(title ?: "")
         }
+        val smallIconRes = list.firstOrNull()?.notification?.smallIcon?.resId?.takeIf { it != 0 } ?: R.drawable.ic_notification
+        val accentColor = packageName.hashCode() or 0xFF000000.toInt()
         val launchIntent = try { context.packageManager.getLaunchIntentForPackage(packageName) } catch (e: Exception) { null }
         val contentIntent = launchIntent?.let { PendingIntent.getActivity(context, summaryId(packageName), it, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE) }
         val builder = NotificationCompat.Builder(context, "devpupu_group_v2")
-            .setSmallIcon(R.drawable.ic_notification)
+            .setSmallIcon(smallIconRes)
             .setContentTitle(appLabel)
             .setContentText("${list.size} notifications")
             .setNumber(list.size)
             .setStyle(inboxStyle)
             .setLargeIcon(appIconBitmap)
+            .setColor(accentColor)
             .setGroup(packageName)
             .setGroupSummary(true)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
