@@ -158,7 +158,6 @@ class GroupingEngine(
             .setStyle(inboxStyle)
             .setLargeIcon(appIconBitmap)
             .setColor(accentColor)
-            .setGroup(packageName)
             .setGroupSummary(true)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setDefaults(NotificationCompat.DEFAULT_ALL)
