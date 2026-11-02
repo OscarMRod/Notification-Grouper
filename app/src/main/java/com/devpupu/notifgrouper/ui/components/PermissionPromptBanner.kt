@@ -7,11 +7,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun PermissionPromptBanner(onGrant: () -> Unit) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+fun PermissionPromptBanner(onEnableClicked: () -> Unit, modifier: Modifier = Modifier) {
+    Card(modifier = modifier.fillMaxWidth()) {
         Column(Modifier.padding(12.dp)) {
             Text("Se necesita permiso de notificaciones")
-            Button(onClick = onGrant) { Text("Conceder") }
+            Button(onClick = onEnableClicked) { Text("Conceder") }
         }
     }
 }

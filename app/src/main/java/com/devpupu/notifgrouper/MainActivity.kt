@@ -37,12 +37,17 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.devpupu.notifgrouper.ui.OnboardingScreen
+import com.devpupu.notifgrouper.ui.GroupedNotificationsScreen
+import com.devpupu.notifgrouper.ui.InsightsScreen
 import com.devpupu.notifgrouper.ui.HistoryScreen
+import com.devpupu.notifgrouper.ui.NotificationHistoryScreen
 import com.devpupu.notifgrouper.ui.RulesScreen
 import com.devpupu.notifgrouper.ui.SettingsScreen
 import com.devpupu.notifgrouper.ui.isNotificationAccessGranted
 import com.devpupu.notifgrouper.ui.theme.DevPupuTheme
+import androidx.hilt.navigation.compose.hiltViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
@@ -72,7 +77,7 @@ class MainActivity : ComponentActivity() {
                     }
 
                     if (granted) {
-                        var current by remember { mutableStateOf("settings") }
+                        var current by remember { mutableStateOf("home") }
                         val drawerState = rememberDrawerState(DrawerValue.Closed)
                         val scope = rememberCoroutineScope()
                         ModalNavigationDrawer(
@@ -80,8 +85,10 @@ class MainActivity : ComponentActivity() {
                             drawerContent = {
                                 ModalDrawerSheet {
                                     Text("Menú", modifier = Modifier.padding(16.dp))
+                                    NavigationDrawerItem(label = { Text("Home") }, selected = current == "home", onClick = { current = "home"; scope.launch { drawerState.close() } })
                                     NavigationDrawerItem(label = { Text("Settings") }, selected = current == "settings", onClick = { current = "settings"; scope.launch { drawerState.close() } })
                                     NavigationDrawerItem(label = { Text("History") }, selected = current == "history", onClick = { current = "history"; scope.launch { drawerState.close() } })
+                                    NavigationDrawerItem(label = { Text("Insights") }, selected = current == "insights", onClick = { current = "insights"; scope.launch { drawerState.close() } })
                                     NavigationDrawerItem(label = { Text("Rules") }, selected = current == "rules", onClick = { current = "rules"; scope.launch { drawerState.close() } })
                                 }
                             }
@@ -89,7 +96,9 @@ class MainActivity : ComponentActivity() {
                             Scaffold(topBar = { TopAppBar(title = { Text("Notification Grouper") }, navigationIcon = { IconButton(onClick = { scope.launch { drawerState.open() } }) { Text("☰") } }) }) { padding ->
                                 Box(Modifier.fillMaxSize().padding(padding)) {
                                     when (current) {
-                                        "history" -> HistoryScreen()
+                                        "home" -> GroupedNotificationsScreen(viewModel = hiltViewModel())
+                                        "history" -> NotificationHistoryScreen()
+                                        "insights" -> InsightsScreen(viewModel = hiltViewModel())
                                         "rules" -> RulesScreen()
                                         else -> SettingsScreen()
                                     }

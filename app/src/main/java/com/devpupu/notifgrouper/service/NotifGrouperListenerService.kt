@@ -10,6 +10,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.cancel
 import com.devpupu.notifgrouper.DevLog
+import com.devpupu.notifgrouper.data.model.AppNotification
+import com.devpupu.notifgrouper.data.repository.NotificationRepository
 import com.devpupu.notifgrouper.data.repository.AppPreferencesRepository
 import com.devpupu.notifgrouper.data.repository.GroupingEngine
 import com.devpupu.notifgrouper.data.repository.SensitivePackages
@@ -53,6 +55,10 @@ class NotifGrouperListenerService : NotificationListenerService() {
             val enabled = try { appPrefs.isGrouped(sbn.packageName) } catch (e: Exception) { false }
             if (!enabled) return@launch
             groupingEngine.add(sbn.packageName, sbn)
+            val repo = NotificationRepository.getInstance(applicationContext)
+            val title = sbn.notification?.extras?.getCharSequence(android.app.Notification.EXTRA_TITLE)?.toString() ?: ""
+            val text = sbn.notification?.extras?.getCharSequence(android.app.Notification.EXTRA_TEXT)?.toString() ?: ""
+            repo.publish(AppNotification(id = sbn.key, packageName = sbn.packageName, appName = appName ?: sbn.packageName, title = title, text = text))
             DevLog.log(applicationContext, "Listener", "add done pkg=${sbn.packageName}")
         }
     }

@@ -8,10 +8,15 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class HistoryViewModel @Inject constructor(dao: NotificationHistoryDao) : ViewModel() {
+class HistoryViewModel @Inject constructor(private val dao: NotificationHistoryDao) : ViewModel() {
     val history: StateFlow<List<NotificationHistoryEntity>> = dao.getAll()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    fun clearHistory() {
+        viewModelScope.launch { dao.clearAll() }
+    }
 }
