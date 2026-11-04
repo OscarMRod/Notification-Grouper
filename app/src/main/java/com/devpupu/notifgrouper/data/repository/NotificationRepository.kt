@@ -4,6 +4,7 @@ import android.content.Context
 import com.devpupu.notifgrouper.data.model.AppNotification
 import com.devpupu.notifgrouper.data.model.AppNotificationGroup
 import com.devpupu.notifgrouper.data.model.DeclutterStats
+import com.devpupu.notifgrouper.service.SystemNotificationGrouper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,6 +20,18 @@ class NotificationRepository private constructor(context: Context) {
 
     fun publish(notification: AppNotification) {
         _allActiveNotifications.value = listOf(notification) + _allActiveNotifications.value.filterNot { it.id == notification.id }
+        val active = _allActiveNotifications.value
+        val groupedAppCount = active.map { it.packageName }.distinct().size
+        val spammiest = active.groupingBy { it.packageName }.eachCount().maxByOrNull { it.value }
+        _declutterStats.value = DeclutterStats(
+            totalActiveNotifications = active.size,
+            groupedAppCount = groupedAppCount,
+            declutterPercentage = if (active.isEmpty()) 0 else (groupedAppCount * 100 / active.size).coerceAtMost(100),
+            spammiestApp = spammiest?.key ?: "None",
+            spammiestAppCount = spammiest?.value ?: 0,
+            totalHistoryCount = _declutterStats.value.totalHistoryCount
+        )
+        SystemNotificationGrouper.showOrUpdateGroupNotification(appContext, notification.packageName)
     }
 
     fun isGroupingEnabledFor(packageName: String): Boolean = true

@@ -88,6 +88,7 @@ fun GroupedNotificationsScreen(
 
     LaunchedEffect(Unit) {
         viewModel.checkPermissionStatus()
+        viewModel.loadConfigurableApps(context)
     }
 
     Box(modifier = modifier.fillMaxSize()) {

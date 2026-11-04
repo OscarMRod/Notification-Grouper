@@ -9,6 +9,32 @@ object SensitivePackages {
         "com.bitwarden.mobile",
         "com.agilebits.onepassword",
         "com.dashlane",
+        // messaging
+        "com.whatsapp",
+        "com.facebook.orca",
+        "org.telegram.messenger",
+        "org.thoughtcrime.securesms",
+        "com.viber.voip",
+        "com.snapchat.android",
+        "com.discord",
+        "com.skype.raider",
+        "com.linecorp.line",
+        "com.kakao.talk",
+        // email
+        "com.google.android.gm",
+        "com.microsoft.office.outlook",
+        "com.yahoo.mobile.client.android.mail",
+        "com.samsung.android.email.provider",
+        "com.android.email",
+        "com.mail.mobile.android.mail",
+        // health
+        "com.google.android.apps.fitness",
+        "com.fitbit.FitbitMobile",
+        "com.myfitnesspal.android",
+        "com.samsung.android.app.health",
+        "com.strava",
+        "com.nike.plusgps",
+        "com.apple.android.music",
     )
 
     val prefixes: List<String> = listOf(
@@ -39,6 +65,27 @@ object SensitivePackages {
         "com.synchrony",
         "com.navyfederal",
         "com.usaa",
+        // messaging
+        "com.whatsapp",
+        "com.telegram",
+        "com.signal",
+        "com.viber",
+        "com.snapchat",
+        "com.discord",
+        "com.skype",
+        "com.linecorp",
+        "com.kakao",
+        // email
+        "com.google.android.gm",
+        "com.microsoft.office.outlook",
+        "com.yahoo.mobile.client.android.mail",
+        // health
+        "com.google.android.apps.fitness",
+        "com.fitbit",
+        "com.myfitnesspal",
+        "com.samsung.android.app.health",
+        "com.strava",
+        "com.nike",
     )
 
     fun isExcluded(pkg: String): Boolean =

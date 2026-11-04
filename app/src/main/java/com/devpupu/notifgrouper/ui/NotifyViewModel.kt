@@ -1,8 +1,10 @@
 package com.devpupu.notifgrouper.ui
 
 import android.app.Application
+import android.content.pm.ApplicationInfo
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -189,6 +191,27 @@ class NotifyViewModel(application: Application) : AndroidViewModel(application) 
 
     fun addSampleNotification() {
         // placeholder
+    }
+
+    private val _excludeSystemApps = MutableStateFlow(true)
+    val excludeSystemApps: StateFlow<Boolean> = _excludeSystemApps.asStateFlow()
+
+    fun loadConfigurableApps(context: Context, excludeSystemApps: Boolean? = null) {
+        val prefs = context.getSharedPreferences("devpupu_prefs", Context.MODE_PRIVATE)
+        val exclude = excludeSystemApps ?: prefs.getBoolean("exclude_system_apps", true)
+        if (excludeSystemApps != null) {
+            prefs.edit().putBoolean("exclude_system_apps", exclude).apply()
+        }
+        _excludeSystemApps.value = exclude
+        viewModelScope.launch {
+            val pm = context.packageManager
+            val apps = pm.getInstalledApplications(PackageManager.GET_META_DATA)
+                .filter { pm.getLaunchIntentForPackage(it.packageName) != null }
+                .filter { !exclude || (it.flags and ApplicationInfo.FLAG_SYSTEM) == 0 }
+                .map { GroupedApp(packageName = it.packageName, appName = pm.getApplicationLabel(it).toString()) }
+                .sortedBy { it.appName?.lowercase() }
+            _allConfigurableApps.value = apps
+        }
     }
 
     fun selectTab(tab: AppNavTab) {

@@ -148,7 +148,7 @@ class GroupingEngine(
         }
         val smallIconRes = list.firstOrNull()?.notification?.smallIcon?.resId?.takeIf { it != 0 } ?: R.drawable.ic_notification
         val accentColor = packageName.hashCode() or 0xFF000000.toInt()
-        val launchIntent = try { context.packageManager.getLaunchIntentForPackage(packageName) } catch (e: Exception) { null }
+        val launchIntent = try { context.packageManager.getLaunchIntentForPackage(packageName)?.apply { putExtra("SELECTED_PACKAGE", packageName) } } catch (e: Exception) { null }
         val contentIntent = launchIntent?.let { PendingIntent.getActivity(context, summaryId(packageName), it, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE) }
         val builder = NotificationCompat.Builder(context, "devpupu_group_v2")
             .setSmallIcon(smallIconRes)

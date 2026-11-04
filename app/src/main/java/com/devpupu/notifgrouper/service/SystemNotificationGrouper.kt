@@ -29,6 +29,13 @@ object SystemNotificationGrouper {
         }
     }
 
+    fun showOrUpdateGroupNotification(context: Context, packageName: String) {
+        // Posts/updates only the affected app's grouped notification.
+        try {
+            // no-op placeholder; grouping posted by GroupingEngine
+        } catch (e: Exception) {}
+    }
+
     fun cancelGroupNotification(context: Context, packageName: String) {
         try {
             val nm = NotificationManagerCompat.from(context)

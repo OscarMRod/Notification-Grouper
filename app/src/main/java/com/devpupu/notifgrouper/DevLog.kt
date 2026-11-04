@@ -1,5 +1,7 @@
 package com.devpupu.notifgrouper
 
+import com.devpupu.notifgrouper.BuildConfig
+
 import android.content.Context
 import java.io.File
 import java.text.SimpleDateFormat
@@ -11,6 +13,7 @@ object DevLog {
     private val fmt = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.US)
 
     fun log(context: Context, tag: String, msg: String) {
+        if (!BuildConfig.DEBUG) return
         try {
             val dir = context.getExternalFilesDir(null) ?: context.filesDir
             val file = File(dir, FILE_NAME)
