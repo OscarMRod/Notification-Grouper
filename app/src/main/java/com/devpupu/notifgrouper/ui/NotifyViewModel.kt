@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.util.LinkedHashMap
 
 enum class AppNavTab(val title: String) {
     GROUPS("Grouped"),
@@ -205,12 +206,28 @@ class NotifyViewModel(application: Application) : AndroidViewModel(application) 
         _excludeSystemApps.value = exclude
         viewModelScope.launch {
             val pm = context.packageManager
-            val apps = pm.getInstalledApplications(PackageManager.GET_META_DATA)
-                .filter { pm.getLaunchIntentForPackage(it.packageName) != null }
-                .filter { !exclude || (it.flags and ApplicationInfo.FLAG_SYSTEM) == 0 }
-                .map { GroupedApp(packageName = it.packageName, appName = pm.getApplicationLabel(it).toString()) }
-                .sortedBy { it.appName?.lowercase() }
-            _allConfigurableApps.value = apps
+            val launchIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
+            val resolveInfos = pm.queryIntentActivities(launchIntent, PackageManager.MATCH_ALL)
+            val collected = mutableMapOf<String, GroupedApp>()
+            for (ri in resolveInfos) {
+                val ai = ri.activityInfo.applicationInfo
+                if (exclude && (ai.flags and ApplicationInfo.FLAG_SYSTEM) != 0) continue
+                val label = try { pm.getApplicationLabel(ai).toString() } catch (e: Exception) { ai.packageName }
+                // touch icon to ensure it resolves (real app icon)
+                try { pm.getApplicationIcon(ai) } catch (e: Exception) { }
+                collected[ai.packageName] = GroupedApp(packageName = ai.packageName, appName = label)
+            }
+            // Auto-register unlisted apps that post notifications
+            for (group in repository.groupedNotifications.value) {
+                val pkg = group.packageName
+                if (pkg in collected) continue
+                val label = try {
+                    pm.getApplicationLabel(pm.getApplicationInfo(pkg, PackageManager.GET_META_DATA)).toString()
+                } catch (e: Exception) { pkg }
+                try { pm.getApplicationIcon(pkg) } catch (e: Exception) { }
+                collected[pkg] = GroupedApp(packageName = pkg, appName = label)
+            }
+            _allConfigurableApps.value = collected.values.sortedBy { it.appName?.lowercase() }
         }
     }
 

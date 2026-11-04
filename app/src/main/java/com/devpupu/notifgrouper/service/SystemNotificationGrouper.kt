@@ -10,6 +10,7 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.devpupu.notifgrouper.MainActivity
+import com.devpupu.notifgrouper.util.AppIconManager
 import com.devpupu.notifgrouper.R
 
 object SystemNotificationGrouper {
@@ -32,6 +33,8 @@ object SystemNotificationGrouper {
     fun showOrUpdateGroupNotification(context: Context, packageName: String) {
         // Posts/updates only the affected app's grouped notification.
         try {
+            // Ensure the originating app's icon is extracted and scaled for notifications/cards.
+            AppIconManager.notificationIconBitmap(context, packageName)
             // no-op placeholder; grouping posted by GroupingEngine
         } catch (e: Exception) {}
     }

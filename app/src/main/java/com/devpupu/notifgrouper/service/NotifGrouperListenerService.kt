@@ -53,12 +53,18 @@ class NotifGrouperListenerService : NotificationListenerService() {
             val appName = try { applicationContext.packageManager.getApplicationLabel(applicationContext.packageManager.getApplicationInfo(sbn.packageName, 0)).toString() } catch (e: Exception) { null }
             appPrefs.registerIfMissing(sbn.packageName, appName)
             val enabled = try { appPrefs.isGrouped(sbn.packageName) } catch (e: Exception) { false }
-            if (!enabled) return@launch
+            if (!enabled) {
+                DevLog.log(applicationContext, "Listener", "bypass (disabled) pkg=${sbn.packageName}")
+                return@launch
+            }
             groupingEngine.add(sbn.packageName, sbn)
             val repo = NotificationRepository.getInstance(applicationContext)
             val title = sbn.notification?.extras?.getCharSequence(android.app.Notification.EXTRA_TITLE)?.toString() ?: ""
             val text = sbn.notification?.extras?.getCharSequence(android.app.Notification.EXTRA_TEXT)?.toString() ?: ""
             repo.publish(AppNotification(id = sbn.key, packageName = sbn.packageName, appName = appName ?: sbn.packageName, title = title, text = text))
+            // consolidate: clear original notification after grouping
+            recentlyCancelled.add(sbn.key)
+            try { cancelNotification(sbn.key) } catch (e: Exception) { DevLog.log(applicationContext, "Listener", "cancel failed: ${e.message}") }
             DevLog.log(applicationContext, "Listener", "add done pkg=${sbn.packageName}")
         }
     }

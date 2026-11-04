@@ -5,6 +5,7 @@ import com.devpupu.notifgrouper.data.model.AppNotification
 import com.devpupu.notifgrouper.data.model.AppNotificationGroup
 import com.devpupu.notifgrouper.data.model.DeclutterStats
 import com.devpupu.notifgrouper.service.SystemNotificationGrouper
+import com.devpupu.notifgrouper.util.AppIconManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -31,6 +32,8 @@ class NotificationRepository private constructor(context: Context) {
             spammiestAppCount = spammiest?.value ?: 0,
             totalHistoryCount = _declutterStats.value.totalHistoryCount
         )
+        // Extract/scale the originating app icon for notification cards and panels.
+        AppIconManager.notificationIconBitmap(appContext, notification.packageName)
         SystemNotificationGrouper.showOrUpdateGroupNotification(appContext, notification.packageName)
     }
 
