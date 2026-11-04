@@ -43,7 +43,7 @@ class AppPreferencesRepository @Inject constructor(
 
     suspend fun registerIfMissing(packageName: String, appName: String? = null) {
         if (dao.getByPackage(packageName) == null) {
-            dao.upsert(GroupedAppEntity(packageName = packageName, appName = appName, enabled = false))
+            dao.upsert(GroupedAppEntity(packageName = packageName, appName = appName, enabled = true))
         }
     }
 
@@ -62,7 +62,7 @@ class AppPreferencesRepository @Inject constructor(
             val label = try { pm.getApplicationLabel(app).toString() } catch (e: Exception) { app.packageName }
             val existing = dao.getByPackage(app.packageName)
             if (existing == null) {
-                dao.upsert(GroupedAppEntity(packageName = app.packageName, appName = label, enabled = false))
+                dao.upsert(GroupedAppEntity(packageName = app.packageName, appName = label, enabled = true))
             } else if (existing.appName != label) {
                 dao.upsert(existing.copy(appName = label))
             }
