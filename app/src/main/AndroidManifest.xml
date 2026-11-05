@@ -39,5 +39,9 @@
             android:name=".ForegroundKeepAliveService"
             android:exported="false"
             android:foregroundServiceType="dataSync" />
+
+        <receiver
+            android:name=".service.NotificationActionReceiver"
+            android:exported="false" />
     </application>
 </manifest>

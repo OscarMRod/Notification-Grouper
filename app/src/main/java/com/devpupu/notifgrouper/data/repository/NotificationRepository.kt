@@ -34,7 +34,19 @@ class NotificationRepository private constructor(context: Context) {
         )
         // Extract/scale the originating app icon for notification cards and panels.
         AppIconManager.notificationIconBitmap(appContext, notification.packageName)
-        SystemNotificationGrouper.showOrUpdateGroupNotification(appContext, notification.packageName)
+        val affected = _allActiveNotifications.value.filter { it.packageName == notification.packageName }
+        SystemNotificationGrouper.showOrUpdateGroupNotification(
+            context = appContext,
+            packageName = notification.packageName,
+            appName = notification.appName,
+            notifications = affected,
+            category = notification.category
+        )
+    }
+
+    fun dismissAppGroup(packageName: String) {
+        _allActiveNotifications.value = _allActiveNotifications.value.filterNot { it.packageName == packageName }
+        SystemNotificationGrouper.cancelGroupNotification(appContext, packageName)
     }
 
     fun isGroupingEnabledFor(packageName: String): Boolean = true
